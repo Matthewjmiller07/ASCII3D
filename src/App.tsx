@@ -86,11 +86,25 @@ const models = [
     baseScale: 1,
     position: [0, 0, 0] as [number, number, number],
   },
+  {
+    name: "Matthew",
+    url: "https://huggingface.co/matthewjmiller07/my-3d-models/resolve/main/matthew.glb",
+    baseScale: 1,
+    position: [0, 0, 0] as [number, number, number],
+  },
 ];
 
 export default function App() {
+  // Allow ?model=<url>&embed=1 params
+  const searchParams =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search)
+      : null;
+  const paramModel = searchParams?.get("model");
+  const embedMode = searchParams?.has("embed");
+
   const [selectedModel, setSelectedModel] = useState(
-    models[0].url,
+    paramModel ?? models[0].url,
   );
   const [userScale, setUserScale] = useState(1);
   const [creditsOpen, setCreditsOpen] = useState(false);
@@ -218,6 +232,7 @@ export default function App() {
       </Canvas>
 
       {/* Left Panel - Model Selection */}
+      {!embedMode && (
       <div className="absolute left-14 top-1/2 -translate-y-1/2 z-10">
         <div className="flex flex-col space-y-8">
           {models.map((model) => (
@@ -235,9 +250,10 @@ export default function App() {
             </button>
           ))}
         </div>
-      </div>
+      </div>) }
 
       {/* Right Panel - Controls - Vertically Centered */}
+      {!embedMode && (
       <div className="absolute right-8 top-1/2 -translate-y-1/2 z-10 p-4 space-y-8 min-w-[200px]">
         {/* Presets */}
         <div>
@@ -397,7 +413,7 @@ export default function App() {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
+      </div>) }
     </div>
   );
 }
