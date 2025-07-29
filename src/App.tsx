@@ -1,10 +1,11 @@
-import { Suspense, useState, useRef, useEffect } from "react";
+import { Suspense, useState, useRef } from "react";
 import { Canvas } from "@react-three/fiber";
 import {
   OrbitControls,
   AsciiRenderer,
   useGLTF,
   Environment,
+  type OrbitControls as OrbitControlsImpl,
 } from "@react-three/drei";
 import { Button } from "./components/ui/button";
 import { Label } from "./components/ui/label";
@@ -90,13 +91,12 @@ const models = [
   {
     name: "Matthew",
     url: "https://huggingface.co/matthewjmiller07/my-3d-models/resolve/main/matthew.glb",
-    baseScale: 0.8, // Slightly smaller to fit better when zoomed in
-    position: [0, -0.1, 0] as [number, number, number], // Slight vertical adjustment
+    baseScale: 0.8,
+    position: [0, -0.1, 0] as [number, number, number],
   },
 ];
 
 export default function App() {
-  // Allow ?model=<url>&embed=1 params
   const searchParams =
     typeof window !== "undefined"
       ? new URLSearchParams(window.location.search)
@@ -108,13 +108,11 @@ export default function App() {
     paramModel ?? models[0].url,
   );
   const [userScale, setUserScale] = useState(1);
-  const controlsRef = useRef<any>(null);
+  const controlsRef = useRef<OrbitControlsImpl | null>(null);
   const [showAscii, setShowAscii] = useState(searchParams?.get('showAscii') === '1');
-  
-  // Toggle ASCII mode
+
   const handleAsciiToggle = (checked: boolean) => {
     setShowAscii(checked);
-    // Update URL without page reload
     const url = new URL(window.location.href);
     if (checked) {
       url.searchParams.set('showAscii', '1');
@@ -129,7 +127,7 @@ export default function App() {
     resolution: 0.22,
     characters: " .:-=+*#%@",
     fgColor: "#ffffff",
-    bgColor: "#111827", // Changed from #007BE5 to match the dark background
+    bgColor: "#111827",
     invert: false,
   });
 
@@ -145,14 +143,12 @@ export default function App() {
   };
 
   const handleModelChange = (newModelUrl: string) => {
-    // Clear GLTF cache for the previous model to prevent loading issues
     if (selectedModel && selectedModel !== newModelUrl) {
       useGLTF.clear(selectedModel);
     }
     setSelectedModel(newModelUrl);
   };
 
-  // Get the current model's base scale
   const currentModel = models.find(
     (model) => model.url === selectedModel,
   );
@@ -160,7 +156,6 @@ export default function App() {
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-[#111827]">
-      {/* Custom CSS for white slider */}
       <style>{`
         .slider-white [data-orientation="horizontal"] {
           background: rgba(255, 255, 255, 0.2);
@@ -194,7 +189,6 @@ export default function App() {
         }
       `}</style>
 
-      {/* 3D Canvas - Full Screen */}
       <Canvas
         style={{
           position: "fixed",
@@ -203,12 +197,10 @@ export default function App() {
           width: "100%",
           height: "100%",
           background: "#111827",
-          // Enable pointer events for the canvas (for OrbitControls)
-          // The controls will still be clickable due to higher z-index and pointer-events-auto
         }}
         camera={{
-          position: [0, 0, 1.5], // Move camera closer to make model appear larger
-          fov: 40, // Narrower field of view for less distortion when zoomed in
+          position: [0, 0, 1.5],
+          fov: 40,
         }}
         gl={{ preserveDrawingBuffer: true }}
         onCreated={({ gl }) => {
@@ -227,7 +219,7 @@ export default function App() {
 
         <Suspense fallback={null}>
           <Model
-            key={selectedModel} // Force re-mount when model changes
+            key={selectedModel}
             scale={finalScale}
             rotation={[0, 0, 0]}
             modelUrl={selectedModel}
@@ -236,7 +228,6 @@ export default function App() {
           <Environment preset="studio" />
         </Suspense>
 
-        {/* ASCII Renderer - Only show when toggled on */}
         {showAscii && (
           <Suspense fallback={null}>
             <AsciiRenderer
@@ -260,7 +251,6 @@ export default function App() {
         />
       </Canvas>
 
-      {/* Left Panel - Model Selection */}
       {!embedMode && (
       <div className="absolute left-14 top-1/2 -translate-y-1/2 z-20 pointer-events-auto">
         <div className="flex flex-col space-y-8">
@@ -281,9 +271,7 @@ export default function App() {
         </div>
       </div>) }
 
-      {/* Bottom Controls Panel */}
       <div className="absolute bottom-4 right-4 z-20 p-3 space-y-3 min-w-[200px] pointer-events-auto bg-black/50 backdrop-blur-sm rounded-lg shadow-lg">
-        {/* ASCII Toggle - Always Visible */}
         <div className="flex items-center justify-between">
           <span className="text-white text-sm font-mono">ASCII Mode</span>
           <Switch
@@ -291,180 +279,170 @@ export default function App() {
             onCheckedChange={handleAsciiToggle}
             className="w-11 h-6 rounded-full relative bg-gray-600 data-[state=checked]:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            <span 
+            <span
               className="block w-5 h-5 bg-white rounded-full transition-transform absolute top-0.5 left-0.5 data-[state=checked]:translate-x-5"
-              data-state={showAscii ? 'checked' : 'unchecked'}
               style={{
                 transition: 'transform 200ms',
               }}
             />
           </Switch>
         </div>
-        
-        {/* Only show other controls in non-embed mode */}
+
         {!embedMode && (
           <div className="space-y-3">
-            {/* Presets */}
             <div>
-          <Label
-            className="text-white text-[15px] mb-3 block font-mono"
-            style={{ fontFamily: "DM Mono, monospace" }}
-          >
-            Presets
-          </Label>
-          <div className="space-y-2">
-            {[
-              { name: ".:-=+*#%@", chars: " .:-=+*#%@" },
-              { name: ".-+*#", chars: " .-+*#" },
-            ].map((preset) => (
-              <Button
-                key={preset.name}
-                variant="outline"
-                size="sm"
-                className="w-full justify-start text-[15px] font-mono bg-white/20 border-white/30 text-white hover:bg-white/30"
-                onClick={() =>
+              <Label
+                className="text-white text-[15px] mb-3 block font-mono"
+                style={{ fontFamily: "DM Mono, monospace" }}
+              >
+                Presets
+              </Label>
+              <div className="space-y-2">
+                {[
+                  { name: ".:-=+*#%@", chars: " .:-=+*#%@" },
+                  { name: ".-+*#", chars: " .-+*#" },
+                ].map((preset) => (
+                  <Button
+                    key={preset.name}
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start text-[15px] font-mono bg-white/20 border-white/30 text-white hover:bg-white/30"
+                    onClick={() =>
+                      setAsciiSettings((prev) => ({
+                        ...prev,
+                        characters: preset.chars,
+                      }))
+                    }
+                    style={{ fontFamily: "DM Mono, monospace" }}
+                  >
+                    {preset.name}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Label
+                className="text-white text-[15px] mb-3 block font-mono"
+                style={{ fontFamily: "DM Mono, monospace" }}
+              >
+                Resolution
+              </Label>
+              <Slider
+                value={[asciiSettings.resolution]}
+                onValueChange={([value]) =>
                   setAsciiSettings((prev) => ({
                     ...prev,
-                    characters: preset.chars,
+                    resolution: value,
                   }))
                 }
+                min={0.05}
+                max={0.5}
+                step={0.01}
+                className="w-full slider-white"
+              />
+              <div
+                className="text-white/60 text-[15px] mt-1 font-mono"
                 style={{ fontFamily: "DM Mono, monospace" }}
               >
-                {preset.name}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Resolution */}
-        <div>
-          <Label
-            className="text-white text-[15px] mb-3 block font-mono"
-            style={{ fontFamily: "DM Mono, monospace" }}
-          >
-            Resolution
-          </Label>
-          <Slider
-            value={[asciiSettings.resolution]}
-            onValueChange={([value]) =>
-              setAsciiSettings((prev) => ({
-                ...prev,
-                resolution: value,
-              }))
-            }
-            min={0.05}
-            max={0.5}
-            step={0.01}
-            className="w-full slider-white"
-          />
-          <div
-            className="text-white/60 text-[15px] mt-1 font-mono"
-            style={{ fontFamily: "DM Mono, monospace" }}
-          >
-            {asciiSettings.resolution.toFixed(3)}
-          </div>
-        </div>
-
-        {/* Scale Control */}
-        <div>
-          <Label
-            className="text-white text-[15px] mb-3 block font-mono"
-            style={{ fontFamily: "DM Mono, monospace" }}
-          >
-            Scale
-          </Label>
-          <Slider
-            value={[userScale]}
-            onValueChange={([value]) => setUserScale(value)}
-            min={0.1}
-            max={3}
-            step={0.1}
-            className="w-full slider-white"
-          />
-          <div
-            className="text-white/60 text-[15px] mt-1 font-mono"
-            style={{ fontFamily: "DM Mono, monospace" }}
-          >
-            {userScale.toFixed(2)}
-          </div>
-        </div>
-
-
-
-        {/* Invert Toggle */}
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="invert"
-            checked={asciiSettings.invert}
-            onCheckedChange={(checked) =>
-              setAsciiSettings((prev) => ({
-                ...prev,
-                invert: checked as boolean,
-              }))
-            }
-            className="border-white/30"
-          />
-          <Label
-            htmlFor="invert"
-            className="text-white text-[15px] font-mono"
-            style={{ fontFamily: "DM Mono, monospace" }}
-          >
-            Invert colors
-          </Label>
-        </div>
-
-        {/* Reset Button */}
-        <Button
-          onClick={resetSettings}
-          variant="outline"
-          className="w-full bg-white/20 border-white/30 text-white hover:bg-white/30 text-[15px] font-mono"
-          style={{ fontFamily: "DM Mono, monospace" }}
-        >
-          Reset
-        </Button>
-
-        {/* Credits as underlined text - closer to Reset */}
-        <div className="-mt-4">
-          <Dialog open={creditsOpen} onOpenChange={setCreditsOpen}>
-            <DialogTrigger asChild>
-              <button
-                className="text-white/60 hover:text-white text-[15px] font-mono underline transition-colors"
-                style={{ fontFamily: "DM Mono, monospace" }}
-              >
-                Credits
-              </button>
-            </DialogTrigger>
-            <DialogContent className="bg-white/95 backdrop-blur-sm">
-              <DialogHeader>
-                <DialogTitle 
-                  className="text-[15px] font-mono text-black"
-                  style={{ fontFamily: "DM Mono, monospace" }}
-                >
-                  Credits
-                </DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div 
-                  className="text-[15px] font-mono text-black leading-relaxed"
-                  style={{ fontFamily: "DM Mono, monospace" }}
-                >
-                  <div>Shiba model by zixisun02</div>
-                  <div>Figma logo by vijay verma</div>
-                  <div>Computer model by tzeshi</div>
-                  <div>Crystal model by GenEugene</div>
-                  <div>Pothos (House Plant) by stevencmutter</div>
-                </div>
-                <div 
-                  className="text-[15px] font-mono text-black mt-6"
-                  style={{ fontFamily: "DM Mono, monospace" }}
-                >
-                  Creative Commons License
-                </div>
+                {asciiSettings.resolution.toFixed(3)}
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-          </>
+            </div>
+
+            <div>
+              <Label
+                className="text-white text-[15px] mb-3 block font-mono"
+                style={{ fontFamily: "DM Mono, monospace" }}
+              >
+                Scale
+              </Label>
+              <Slider
+                value={[userScale]}
+                onValueChange={([value]) => setUserScale(value)}
+                min={0.1}
+                max={3}
+                step={0.1}
+                className="w-full slider-white"
+              />
+              <div
+                className="text-white/60 text-[15px] mt-1 font-mono"
+                style={{ fontFamily: "DM Mono, monospace" }}
+              >
+                {userScale.toFixed(2)}
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="invert"
+                checked={asciiSettings.invert}
+                onCheckedChange={(checked) =>
+                  setAsciiSettings((prev) => ({
+                    ...prev,
+                    invert: checked as boolean,
+                  }))
+                }
+                className="border-white/30"
+              />
+              <Label
+                htmlFor="invert"
+                className="text-white text-[15px] font-mono"
+                style={{ fontFamily: "DM Mono, monospace" }}
+              >
+                Invert colors
+              </Label>
+            </div>
+
+            <Button
+              onClick={resetSettings}
+              variant="outline"
+              className="w-full bg-white/20 border-white/30 text-white hover:bg-white/30 text-[15px] font-mono"
+              style={{ fontFamily: "DM Mono, monospace" }}
+            >
+              Reset
+            </Button>
+
+            <div className="-mt-4">
+              <Dialog open={creditsOpen} onOpenChange={setCreditsOpen}>
+                <DialogTrigger asChild>
+                  <button
+                    className="text-white/60 hover:text-white text-[15px] font-mono underline transition-colors"
+                    style={{ fontFamily: "DM Mono, monospace" }}
+                  >
+                    Credits
+                  </button>
+                </DialogTrigger>
+                <DialogContent className="bg-white/95 backdrop-blur-sm">
+                  <DialogHeader>
+                    <DialogTitle
+                      className="text-[15px] font-mono text-black"
+                      style={{ fontFamily: "DM Mono, monospace" }}
+                    >
+                      Credits
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div
+                      className="text-[15px] font-mono text-black leading-relaxed"
+                      style={{ fontFamily: "DM Mono, monospace" }}
+                    >
+                      <div>Shiba model by zixisun02</div>
+                      <div>Figma logo by vijay verma</div>
+                      <div>Computer model by tzeshi</div>
+                      <div>Crystal model by GenEugene</div>
+                      <div>Pothos (House Plant) by stevencmutter</div>
+                    </div>
+                    <div
+                      className="text-[15px] font-mono text-black mt-6"
+                      style={{ fontFamily: "DM Mono, monospace" }}
+                    >
+                      Creative Commons License
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
         )}
       </div>
     </div>
