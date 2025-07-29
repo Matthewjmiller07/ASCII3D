@@ -121,7 +121,7 @@ export default function App() {
     resolution: 0.22,
     characters: " .:-=+*#%@",
     fgColor: "#ffffff",
-    bgColor: "#007BE5",
+    bgColor: "#111827", // Changed from #007BE5 to match the dark background
     invert: false,
   });
 
