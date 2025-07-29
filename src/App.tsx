@@ -151,7 +151,7 @@ export default function App() {
   const finalScale = (currentModel?.baseScale || 1) * userScale;
 
   return (
-    <div className={`relative h-screen w-screen overflow-hidden ${showAscii ? 'bg-black' : 'bg-[#1a1a1a]'}`}>
+    <div className="relative h-screen w-screen overflow-hidden bg-[#111827]">
       {/* Custom CSS for white slider */}
       <style>{`
         .slider-white [data-orientation="horizontal"] {
@@ -194,7 +194,7 @@ export default function App() {
           left: 0,
           width: "100%",
           height: "100%",
-          background: showAscii ? "#000" : "#1a1a1a",
+          background: "#111827",
           // Enable pointer events for the canvas (for OrbitControls)
           // The controls will still be clickable due to higher z-index and pointer-events-auto
         }}
