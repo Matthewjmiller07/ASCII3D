@@ -274,9 +274,37 @@ export default function App() {
       </div>) }
 
       {/* Right Panel - Controls - Vertically Centered */}
-      {!embedMode && (
       <div className="absolute right-8 top-1/2 -translate-y-1/2 z-20 p-4 space-y-8 min-w-[200px] pointer-events-auto bg-black/30 rounded-lg">
-        {/* Presets */}
+        {/* Always show ASCII toggle in embed mode */}
+        <div className="flex items-center justify-between p-2 bg-black/20 rounded-lg">
+          <span className="text-white text-sm font-mono">ASCII Mode</span>
+          <Switch
+            checked={showAscii}
+            onCheckedChange={handleAsciiToggle}
+            className={`
+              w-[42px] h-6 rounded-full relative
+              bg-gray-600
+              data-[state=checked]:bg-blue-500
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+            `}
+          >
+            <span 
+              className={`
+                block w-5 h-5 bg-white rounded-full transition-transform
+                ${showAscii ? 'translate-x-5' : 'translate-x-0.5'}
+              `}
+              style={{
+                transform: showAscii ? 'translateX(20px)' : 'translateX(2px)',
+                transition: 'transform 200ms',
+              }}
+            />
+          </Switch>
+        </div>
+        
+        {/* Only show other controls in non-embed mode */}
+        {!embedMode && (
+          <>
+            {/* Presets */}
         <div>
           <Label
             className="text-white text-[15px] mb-3 block font-mono"
@@ -361,31 +389,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* ASCII Toggle */}
-        <div className="flex items-center justify-between p-2 bg-black/20 rounded-lg">
-          <span className="text-white text-sm font-mono">ASCII Mode</span>
-          <Switch
-            checked={showAscii}
-            onCheckedChange={handleAsciiToggle}
-            className={`
-              w-[42px] h-6 rounded-full relative
-              bg-gray-600
-              data-[state=checked]:bg-blue-500
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-            `}
-          >
-            <span 
-              className={`
-                block w-5 h-5 bg-white rounded-full transition-transform
-                ${showAscii ? 'translate-x-5' : 'translate-x-0.5'}
-              `}
-              style={{
-                transform: showAscii ? 'translateX(20px)' : 'translateX(2px)',
-                transition: 'transform 200ms',
-              }}
-            />
-          </Switch>
-        </div>
+
 
         {/* Invert Toggle */}
         <div className="flex items-center space-x-2">
@@ -460,7 +464,9 @@ export default function App() {
             </DialogContent>
           </Dialog>
         </div>
-      </div>) }
+          </>
+        )}
+      </div>
     </div>
   );
 }
