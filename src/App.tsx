@@ -281,28 +281,20 @@ export default function App() {
         </div>
       </div>) }
 
-      {/* Right Panel - Controls - Vertically Centered */}
-      <div className="absolute right-8 top-1/2 -translate-y-1/2 z-20 p-4 space-y-8 min-w-[200px] pointer-events-auto bg-black/30 rounded-lg">
-        {/* Always show ASCII toggle in embed mode */}
-        <div className="flex items-center justify-between p-2 bg-black/20 rounded-lg">
+      {/* Bottom Controls Panel */}
+      <div className="absolute bottom-4 right-4 z-20 p-3 space-y-3 min-w-[200px] pointer-events-auto bg-black/50 backdrop-blur-sm rounded-lg shadow-lg">
+        {/* ASCII Toggle - Always Visible */}
+        <div className="flex items-center justify-between">
           <span className="text-white text-sm font-mono">ASCII Mode</span>
           <Switch
             checked={showAscii}
             onCheckedChange={handleAsciiToggle}
-            className={`
-              w-[42px] h-6 rounded-full relative
-              bg-gray-600
-              data-[state=checked]:bg-blue-500
-              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
-            `}
+            className="w-11 h-6 rounded-full relative bg-gray-600 data-[state=checked]:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <span 
-              className={`
-                block w-5 h-5 bg-white rounded-full transition-transform
-                ${showAscii ? 'translate-x-5' : 'translate-x-0.5'}
-              `}
+              className="block w-5 h-5 bg-white rounded-full transition-transform absolute top-0.5 left-0.5 data-[state=checked]:translate-x-5"
+              data-state={showAscii ? 'checked' : 'unchecked'}
               style={{
-                transform: showAscii ? 'translateX(20px)' : 'translateX(2px)',
                 transition: 'transform 200ms',
               }}
             />
@@ -311,9 +303,9 @@ export default function App() {
         
         {/* Only show other controls in non-embed mode */}
         {!embedMode && (
-          <>
+          <div className="space-y-3">
             {/* Presets */}
-        <div>
+            <div>
           <Label
             className="text-white text-[15px] mb-3 block font-mono"
             style={{ fontFamily: "DM Mono, monospace" }}
