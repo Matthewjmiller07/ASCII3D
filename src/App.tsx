@@ -1,4 +1,4 @@
-import { Suspense, useState } from "react";
+import { Suspense, useState, useRef, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import {
   OrbitControls,
@@ -108,7 +108,13 @@ export default function App() {
     paramModel ?? models[0].url,
   );
   const [userScale, setUserScale] = useState(1);
+  const controlsRef = useRef<any>(null);
   const [showAscii, setShowAscii] = useState(true);
+  
+  // Toggle ASCII mode
+  const handleAsciiToggle = (checked: boolean) => {
+    setShowAscii(checked);
+  };
   const [creditsOpen, setCreditsOpen] = useState(false);
 
   const [asciiSettings, setAsciiSettings] = useState({
@@ -145,7 +151,7 @@ export default function App() {
   const finalScale = (currentModel?.baseScale || 1) * userScale;
 
   return (
-    <div className="w-full h-screen relative">
+    <div className={`relative h-screen w-screen overflow-hidden ${showAscii ? 'bg-black' : 'bg-[#1a1a1a]'}`}>
       {/* Custom CSS for white slider */}
       <style>{`
         .slider-white [data-orientation="horizontal"] {
@@ -182,6 +188,16 @@ export default function App() {
 
       {/* 3D Canvas - Full Screen */}
       <Canvas
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: showAscii ? "#000" : "#1a1a1a",
+          // Enable pointer events for the canvas (for OrbitControls)
+          // The controls will still be clickable due to higher z-index and pointer-events-auto
+        }}
         camera={{
           position: [0, 0, 3],
           fov: 50,
@@ -227,6 +243,7 @@ export default function App() {
         )}
 
         <OrbitControls
+          ref={controlsRef}
           autoRotate={true}
           autoRotateSpeed={2}
           enablePan={true}
@@ -237,7 +254,7 @@ export default function App() {
 
       {/* Left Panel - Model Selection */}
       {!embedMode && (
-      <div className="absolute left-14 top-1/2 -translate-y-1/2 z-10">
+      <div className="absolute left-14 top-1/2 -translate-y-1/2 z-20 pointer-events-auto">
         <div className="flex flex-col space-y-8">
           {models.map((model) => (
             <button
@@ -258,7 +275,7 @@ export default function App() {
 
       {/* Right Panel - Controls - Vertically Centered */}
       {!embedMode && (
-      <div className="absolute right-8 top-1/2 -translate-y-1/2 z-10 p-4 space-y-8 min-w-[200px]">
+      <div className="absolute right-8 top-1/2 -translate-y-1/2 z-20 p-4 space-y-8 min-w-[200px] pointer-events-auto bg-black/30 rounded-lg">
         {/* Presets */}
         <div>
           <Label
@@ -349,9 +366,25 @@ export default function App() {
           <span className="text-white text-sm font-mono">ASCII Mode</span>
           <Switch
             checked={showAscii}
-            onCheckedChange={setShowAscii}
-            className="data-[state=checked]:bg-blue-500"
-          />
+            onCheckedChange={handleAsciiToggle}
+            className={`
+              w-[42px] h-6 rounded-full relative
+              bg-gray-600
+              data-[state=checked]:bg-blue-500
+              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500
+            `}
+          >
+            <span 
+              className={`
+                block w-5 h-5 bg-white rounded-full transition-transform
+                ${showAscii ? 'translate-x-5' : 'translate-x-0.5'}
+              `}
+              style={{
+                transform: showAscii ? 'translateX(20px)' : 'translateX(2px)',
+                transition: 'transform 200ms',
+              }}
+            />
+          </Switch>
         </div>
 
         {/* Invert Toggle */}
