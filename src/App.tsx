@@ -90,8 +90,8 @@ const models = [
   {
     name: "Matthew",
     url: "https://huggingface.co/matthewjmiller07/my-3d-models/resolve/main/matthew.glb",
-    baseScale: 1,
-    position: [0, 0, 0] as [number, number, number],
+    baseScale: 0.8, // Slightly smaller to fit better when zoomed in
+    position: [0, -0.1, 0] as [number, number, number], // Slight vertical adjustment
   },
 ];
 
@@ -199,8 +199,8 @@ export default function App() {
           // The controls will still be clickable due to higher z-index and pointer-events-auto
         }}
         camera={{
-          position: [0, 0, 3],
-          fov: 50,
+          position: [0, 0, 1.5], // Move camera closer to make model appear larger
+          fov: 40, // Narrower field of view for less distortion when zoomed in
         }}
         gl={{ preserveDrawingBuffer: true }}
         onCreated={({ gl }) => {
