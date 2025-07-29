@@ -109,11 +109,19 @@ export default function App() {
   );
   const [userScale, setUserScale] = useState(1);
   const controlsRef = useRef<any>(null);
-  const [showAscii, setShowAscii] = useState(true);
+  const [showAscii, setShowAscii] = useState(searchParams?.get('showAscii') === '1');
   
   // Toggle ASCII mode
   const handleAsciiToggle = (checked: boolean) => {
     setShowAscii(checked);
+    // Update URL without page reload
+    const url = new URL(window.location.href);
+    if (checked) {
+      url.searchParams.set('showAscii', '1');
+    } else {
+      url.searchParams.delete('showAscii');
+    }
+    window.history.pushState({}, '', url);
   };
   const [creditsOpen, setCreditsOpen] = useState(false);
 
