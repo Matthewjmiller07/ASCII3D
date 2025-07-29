@@ -10,6 +10,7 @@ import { Button } from "./components/ui/button";
 import { Label } from "./components/ui/label";
 import { Slider } from "./components/ui/slider";
 import { Checkbox } from "./components/ui/checkbox";
+import { Switch } from "@radix-ui/react-switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./components/ui/dialog";
 
 interface ModelProps {
@@ -107,6 +108,7 @@ export default function App() {
     paramModel ?? models[0].url,
   );
   const [userScale, setUserScale] = useState(1);
+  const [showAscii, setShowAscii] = useState(true);
   const [creditsOpen, setCreditsOpen] = useState(false);
 
   const [asciiSettings, setAsciiSettings] = useState({
@@ -210,17 +212,19 @@ export default function App() {
           <Environment preset="studio" />
         </Suspense>
 
-        {/* AsciiRenderer with explicit key to force re-render when settings change */}
-        <Suspense fallback={null}>
-          <AsciiRenderer
-            key={`${asciiSettings.resolution}-${asciiSettings.characters}-${asciiSettings.fgColor}-${asciiSettings.bgColor}-${asciiSettings.invert}`}
-            resolution={asciiSettings.resolution}
-            characters={asciiSettings.characters}
-            fgColor={asciiSettings.fgColor}
-            bgColor={asciiSettings.bgColor}
-            invert={asciiSettings.invert}
-          />
-        </Suspense>
+        {/* ASCII Renderer - Only show when toggled on */}
+        {showAscii && (
+          <Suspense fallback={null}>
+            <AsciiRenderer
+              key={`${asciiSettings.resolution}-${asciiSettings.characters}-${asciiSettings.fgColor}-${asciiSettings.bgColor}-${asciiSettings.invert}`}
+              resolution={asciiSettings.resolution}
+              characters={asciiSettings.characters}
+              fgColor={asciiSettings.fgColor}
+              bgColor={asciiSettings.bgColor}
+              invert={asciiSettings.invert}
+            />
+          </Suspense>
+        )}
 
         <OrbitControls
           autoRotate={true}
@@ -338,6 +342,16 @@ export default function App() {
           >
             {userScale.toFixed(2)}
           </div>
+        </div>
+
+        {/* ASCII Toggle */}
+        <div className="flex items-center justify-between p-2 bg-black/20 rounded-lg">
+          <span className="text-white text-sm font-mono">ASCII Mode</span>
+          <Switch
+            checked={showAscii}
+            onCheckedChange={setShowAscii}
+            className="data-[state=checked]:bg-blue-500"
+          />
         </div>
 
         {/* Invert Toggle */}
